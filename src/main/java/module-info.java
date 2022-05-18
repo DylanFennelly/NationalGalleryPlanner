@@ -8,6 +8,7 @@ module ng.plan.nationalgalleryplanner {
     opens ng.plan.nationalgalleryplanner.ADTs to javafx.fxml, xstream;
 
 
+
     exports ng.plan.nationalgalleryplanner.ADTs;
     exports ng.plan.nationalgalleryplanner;
 }

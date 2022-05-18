@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import ng.plan.nationalgalleryplanner.ADTs.GraphNodeAdjList;
 import ng.plan.nationalgalleryplanner.ADTs.Room;
@@ -28,7 +29,7 @@ public class NGPRun extends Application {
 
 
         public void createRooms(){  //one time method to create all Rooms
-            room1=new GraphNodeAdjList<>(new Room("Room 1","1","The Credit Suisse Exhibition: Raphael",))
+            room1=new GraphNodeAdjList<>(new Room("Room 1","1","The Credit Suisse Exhibition: Raphael","",new Image("src/main/java/ng/plan/nationalgalleryplanner/roomImages/raphael-image.jpg")));
 
         }
     }

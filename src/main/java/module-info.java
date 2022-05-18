@@ -1,12 +1,12 @@
 module ng.plan.nationalgalleryplanner {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.graphics;
     requires xstream;
 
 
     opens ng.plan.nationalgalleryplanner to javafx.fxml, xstream;
     opens ng.plan.nationalgalleryplanner.ADTs to javafx.fxml, xstream;
-    opens javafx.graphics to xstream;
 
 
     exports ng.plan.nationalgalleryplanner.ADTs;

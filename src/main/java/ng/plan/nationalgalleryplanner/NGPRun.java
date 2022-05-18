@@ -304,41 +304,148 @@ public class NGPRun extends Application {
             roomVestibule=new GraphNodeAdjList<>(new Room("Main Vestibule","MV","Main Vestibule","The Main Vestibule, just beyond the Portico entrance, leads up the stairs to Central Hall, Room 1 and the galleries on the main floor. Boris Anrep's mosaics were added in the 1920s and 30s, depicting leading figures of the day as characters from mythology."));
             roomBridge=new GraphNodeAdjList<>(new Room("Bridge to Sainsbury Wing","BR","",""));
 
+            room1.connectNodeUndir(room2,10);   //default cost is 10 if room is not marked as a point of interest
+            room1.connectNodeUndir(roomVestibule,10);
 
+            room2.connectNodeUndir(roomVestibule,10);
+            room2.connectNodeUndir(room4,10);
 
+            room4.connectNodeUndir(room5,10);
+            room4.connectNodeUndir(room6,10);
 
+            room5.connectNodeUndir(room11,10);
 
+            room6.connectNodeUndir(room7, 10);
 
+            room7.connectNodeUndir(room8,10);
 
+            room9.connectNodeUndir(room10,10);
+            room9.connectNodeUndir(room15,10);
+            room9.connectNodeUndir(room16,10);
+            room9.connectNodeUndir(roomBridge, 10);
 
+            room10.connectNodeUndir(room11,10);
 
+            room11.connectNodeUndir(room12,10);
+            room11.connectNodeUndir(room14,10);
 
+            room12.connectNodeUndir(roomCentral,10);
 
+            room14.connectNodeUndir(room29,10);
 
+            room15.connectNodeUndir(room16,10);
+            room15.connectNodeUndir(room17,10);
+            room15.connectNodeUndir(room15s,10);
+            room15.connectNodeUndir(room29,10);
 
+            room16.connectNodeUndir(room17,10);
+            room17.connectNodeUndir(room17a, 10);
 
+            room15s.connectNodeUndir(room18,10);
+            room15s.connectNodeUndir(room18,10);
 
+            room18.connectNodeUndir(room19,10);
+            room18.connectNodeUndir(room21,10);
+            room18.connectNodeUndir(room22,10);
+            room18.connectNodeUndir(room24,10);
 
+            room19.connectNodeUndir(room20,10);
 
+            room20.connectNodeUndir(room21,10);
 
+            room22.connectNodeUndir(room23, 10);
 
+            room23.connectNodeUndir(room24,10);
 
+            room24.connectNodeUndir(room25,10);
 
+            room25.connectNodeUndir(room28,10);
 
+            room26.connectNodeUndir(room27,10);
 
+            room27.connectNodeUndir(room28,10);
 
+            room28.connectNodeUndir(room29,10);
 
+            room29.connectNodeUndir(room30,10);
 
+            room30.connectNodeUndir(room31, 10000); //high cost for closed rooms
+            room30.connectNodeUndir(roomSunley, 10000);
+            room30.connectNodeUndir(room32,10);
 
+            room32.connectNodeUndir(room33,10);
+            room32.connectNodeUndir(room37,10);
 
+            room33.connectNodeUndir(room34,10);
 
+            room34.connectNodeUndir(room35,10);
+            room34.connectNodeUndir(room41,10);
 
+            room35.connectNodeUndir(room36,10);
 
+            room36.connectNodeUndir(room37,10);
+            room36.connectNodeUndir(room38,10);
+            room36.connectNodeUndir(room40,10);
 
+            room38.connectNodeUndir(room39,10);
 
+            room39.connectNodeUndir(roomCentral,10);
 
+            room40.connectNodeUndir(room44,10);
 
+            room41.connectNodeUndir(room42,10000);
+            room41.connectNodeUndir(room34,10);
 
+            room42.connectNodeUndir(room43,10000);
+
+            room43.connectNodeUndir(room44,10);
+
+            room44.connectNodeUndir(room45,10);
+
+            room45.connectNodeUndir(room46,10000);
+            room45.connectNodeUndir(roomVestibule,10);
+
+            room46.connectNodeUndir(roomVestibule,10000);
+
+            roomVestibule.connectNodeUndir(roomCentral,10);
+
+            roomCentral.connectNodeUndir(roomSunley,10000);
+
+            roomBridge.connectNodeUndir(room51,10);
+
+            room51.connectNodeUndir(room51a,10);
+            room51.connectNodeUndir(room52,10);
+            room51.connectNodeUndir(room60,10);
+
+            room52.connectNodeUndir(room53,10);
+
+            room53.connectNodeUndir(room54,10);
+            room53.connectNodeUndir(room59,10);
+
+            room54.connectNodeUndir(room55,10);
+
+            room55.connectNodeUndir(room56,10);
+            room55.connectNodeUndir(room57,10);
+
+            room57.connectNodeUndir(room58,10);
+            room57.connectNodeUndir(room65,10);
+
+            room58.connectNodeUndir(room59,10);
+
+            room59.connectNodeUndir(room60,10);
+            room59.connectNodeUndir(room63,10);
+
+            room60.connectNodeUndir(room61,10);
+
+            room61.connectNodeUndir(room62,10);
+
+            room62.connectNodeUndir(room63,10);
+
+            room63.connectNodeUndir(room64,10);
+
+            room64.connectNodeUndir(room65,10);
+
+            room65.connectNodeUndir(room66,10);
 
         }
     }
@@ -355,7 +462,7 @@ public class NGPRun extends Application {
         stage.show();
 
         boolean xmlExists = new File("ngpRooms.xml").isFile();
-        //if (!xmlExists)
+        if (!xmlExists)
             save(); //creates an xml file if it doesnt exit yet
         load();
 

@@ -44,9 +44,9 @@
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
                   <Label layoutX="14.0" layoutY="14.0" text="Current Room" />
-                  <ComboBox fx:id="curRoomComboBox" layoutX="119.0" layoutY="10.0" prefWidth="150.0" onMouseEntered="#onComboBoxMouseEnter"/>
+                  <ComboBox fx:id="curRoomComboBox" layoutX="119.0" layoutY="10.0" onMouseEntered="#onComboBoxMouseEnter" prefWidth="150.0" />
                   <Label layoutX="14.0" layoutY="44.0" text="Destination Room" />
-                  <ComboBox fx:id="destRoomComboBox" layoutX="140.0" layoutY="40.0" prefWidth="150.0" onMouseEntered="#onComboBoxMouseEnter"/>
+                  <ComboBox fx:id="destRoomComboBox" layoutX="140.0" layoutY="40.0" onMouseEntered="#onComboBoxMouseEnter" prefWidth="150.0" />
                   <Label layoutX="14.0" layoutY="77.0" text="Select Algorithm" />
                   <RadioButton fx:id="dfsRadio" layoutX="128.0" layoutY="77.0" mnemonicParsing="false" selected="true" text="Depth-First-Search">
                      <toggleGroup>
@@ -69,8 +69,8 @@
                   <Button layoutX="24.0" layoutY="460.0" mnemonicParsing="false" text="Add" />
                   <Button layoutX="107.0" layoutY="460.0" mnemonicParsing="false" text="Clear" />
                   <ListView layoutX="220.0" layoutY="433.0" prefHeight="81.0" prefWidth="200.0" />
-                  <TreeView layoutX="115.0" layoutY="537.0" prefHeight="200.0" prefWidth="200.0" />
-                  <Button fx:id="findRoutesButton" layoutX="341.0" layoutY="759.0" mnemonicParsing="false" text="Find Routes" onAction="#onFindRoutesButtonClick" />
+                  <TreeView fx:id="routesTreeView" layoutX="115.0" layoutY="537.0" prefHeight="200.0" prefWidth="200.0" />
+                  <Button fx:id="findRoutesButton" layoutX="341.0" layoutY="759.0" mnemonicParsing="false" onAction="#onFindRoutesButtonClick" text="Find Routes" />
                   <Label layoutX="16.0" layoutY="537.0" text="Routes" />
                   <Spinner fx:id="routeLimitSpinner" editable="true" layoutX="277.0" layoutY="73.0" />
                   <Label layoutX="320.0" layoutY="57.0" text="Route Limit" />

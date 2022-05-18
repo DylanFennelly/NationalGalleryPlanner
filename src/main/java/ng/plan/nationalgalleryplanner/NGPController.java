@@ -113,7 +113,7 @@ public class NGPController {
     }
 
     private void runDFSSingleRoute(){
-        List<GraphNodeAdjList<Room>> path = NGPAlgorithms.findPathDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data);
+        List<GraphNodeAdjList<Room>> path = NGPAlgorithms.findPathDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data, avoidedRooms);
 
         //todo: objects (display room names in treeview) so room details can be displayed on click
         //todo: arrayList with room objects (indices corresponding to room in list) [Array of Arrays]
@@ -129,17 +129,19 @@ public class NGPController {
 
     @FXML
     private void onAddAvoidedRoomButtonPress(){
+        //todo: cant add duplicates (low priority)
         avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);
         avoidedRooms.add(avoidRoomComboBox.getValue());
     }
 
     @FXML
     private void onClearAvoidedRoomsButtonPress(){
-        
+        avoidRoomsListView.getItems().clear();
+        avoidedRooms.clear();
     }
 
     private void runDFSMultiRoute(){
-        List<List<GraphNodeAdjList<Room>>> allPath = NGPAlgorithms.findAllPathsDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data);
+        List<List<GraphNodeAdjList<Room>>> allPath = NGPAlgorithms.findAllPathsDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data, avoidedRooms);
         int pCount=1;
 
         ArrayList<TreeItem<String>> treeRoutes = new ArrayList<>();
@@ -170,7 +172,7 @@ public class NGPController {
 
     private void runDijkstras() {
         //todo: set null condition
-        NGPAlgorithms.CostedPath cpa=NGPAlgorithms.findCheapestPathDijkstra(curRoomComboBox.getValue(),destRoomComboBox.getValue().data);
+        NGPAlgorithms.CostedPath cpa=NGPAlgorithms.findCheapestPathDijkstra(curRoomComboBox.getValue(),destRoomComboBox.getValue().data, avoidedRooms);
 
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);
@@ -183,7 +185,7 @@ public class NGPController {
     }
 
     private void runBFS() {
-        List<GraphNodeAdjList<Room>> bfsPath = NGPAlgorithms.findPathBreadthFirst(curRoomComboBox.getValue(),destRoomComboBox.getValue().data);
+        List<GraphNodeAdjList<Room>> bfsPath = NGPAlgorithms.findPathBreadthFirst(curRoomComboBox.getValue(),destRoomComboBox.getValue().data, avoidedRooms);
 
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);

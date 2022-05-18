@@ -319,6 +319,8 @@ public class NGPRun extends Application {
 
             room7.connectNodeUndir(room8,10);
 
+            room8.connectNodeUndir(room9,10);
+
             room9.connectNodeUndir(room10,10);
             room9.connectNodeUndir(room15,10);
             room9.connectNodeUndir(room16,10);
@@ -342,7 +344,7 @@ public class NGPRun extends Application {
             room17.connectNodeUndir(room17a, 10);
 
             room15s.connectNodeUndir(room18,10);
-            room15s.connectNodeUndir(room18,10);
+            room15s.connectNodeUndir(room26,10);
 
             room18.connectNodeUndir(room19,10);
             room18.connectNodeUndir(room21,10);
@@ -453,7 +455,7 @@ public class NGPRun extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         ROOMS = new RoomStore();
-        ROOMS.createRooms();
+
         boolean xmlExists = new File("ngpRooms.xml").isFile();
         if (!xmlExists)
             save(); //creates an xml file if it doesnt exit yet

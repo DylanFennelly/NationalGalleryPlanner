@@ -3,7 +3,7 @@ package ng.plan.nationalgalleryplanner;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class HelloController {
+public class NGPController {
     @FXML
     private Label welcomeText;
 

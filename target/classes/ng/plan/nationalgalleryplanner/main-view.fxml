@@ -2,17 +2,20 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="800.0" prefWidth="1200.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/16" fx:controller="ng.plan.nationalgalleryplanner.NGPController">
+<VBox alignment="CENTER" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ng.plan.nationalgalleryplanner.NGPController">
    <children>
       <SplitPane dividerPositions="0.63" prefHeight="800.0" prefWidth="1200.0">
         <items>
@@ -41,13 +44,16 @@
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
                   <Label layoutX="14.0" layoutY="14.0" text="Current Room" />
-                  <ChoiceBox layoutX="108.0" layoutY="10.0" prefWidth="150.0" />
+                  <ComboBox fx:id="curRoomComboBox" layoutX="119.0" layoutY="10.0" prefWidth="150.0" onMouseEntered="#onComboBoxMouseEnter"/>
                   <Label layoutX="14.0" layoutY="44.0" text="Destination Room" />
-                  <ChoiceBox layoutX="128.0" layoutY="40.0" prefWidth="150.0" />
+                  <ComboBox fx:id="destRoomComboBox" layoutX="140.0" layoutY="40.0" prefWidth="150.0" onMouseEntered="#onComboBoxMouseEnter"/>
                   <Label layoutX="14.0" layoutY="77.0" text="Select Algorithm" />
-                  <RadioButton layoutX="128.0" layoutY="77.0" mnemonicParsing="false" text="RadioButton" />
-                  <RadioButton layoutX="128.0" layoutY="94.0" mnemonicParsing="false" text="RadioButton" />
-                  <RadioButton layoutX="128.0" layoutY="111.0" mnemonicParsing="false" text="RadioButton" />
+                  <RadioButton fx:id="dfsRadio" layoutX="128.0" layoutY="77.0" mnemonicParsing="false" selected="true" text="Depth-First-Search">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="algoToggleGroup" />
+                     </toggleGroup></RadioButton>
+                  <RadioButton layoutX="128.0" layoutY="94.0" mnemonicParsing="false" text="RadioButton" toggleGroup="$algoToggleGroup" />
+                  <RadioButton layoutX="128.0" layoutY="111.0" mnemonicParsing="false" text="RadioButton" toggleGroup="$algoToggleGroup" />
                   <Label layoutX="14.0" layoutY="143.0" text="Rooms to avoid" />
                   <ChoiceBox layoutX="108.0" layoutY="139.0" prefWidth="150.0" />
                   <Button layoutX="110.0" layoutY="172.0" mnemonicParsing="false" text="Add" />
@@ -64,8 +70,10 @@
                   <Button layoutX="107.0" layoutY="460.0" mnemonicParsing="false" text="Clear" />
                   <ListView layoutX="220.0" layoutY="433.0" prefHeight="81.0" prefWidth="200.0" />
                   <TreeView layoutX="115.0" layoutY="537.0" prefHeight="200.0" prefWidth="200.0" />
-                  <Button layoutX="341.0" layoutY="759.0" mnemonicParsing="false" text="Find Routes" />
+                  <Button fx:id="findRoutesButton" layoutX="341.0" layoutY="759.0" mnemonicParsing="false" text="Find Routes" onAction="#onFindRoutesButtonClick" />
                   <Label layoutX="16.0" layoutY="537.0" text="Routes" />
+                  <Spinner fx:id="routeLimitSpinner" editable="true" layoutX="277.0" layoutY="73.0" />
+                  <Label layoutX="320.0" layoutY="57.0" text="Route Limit" />
                </children>
             </AnchorPane>
         </items>

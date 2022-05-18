@@ -453,18 +453,18 @@ public class NGPRun extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         ROOMS = new RoomStore();
-
         ROOMS.createRooms();
+        boolean xmlExists = new File("ngpRooms.xml").isFile();
+        if (!xmlExists)
+            save(); //creates an xml file if it doesnt exit yet
+        load();
         Parent p = FXMLLoader.load(Objects.requireNonNull(NGPRun.class.getResource("main-view.fxml")));
         Scene scene = new Scene(p);
         stage.setTitle("National Gallery Route Planner");
         stage.setScene(scene);
         stage.show();
 
-        boolean xmlExists = new File("ngpRooms.xml").isFile();
-        if (!xmlExists)
-            save(); //creates an xml file if it doesnt exit yet
-        load();
+
 
     }
 

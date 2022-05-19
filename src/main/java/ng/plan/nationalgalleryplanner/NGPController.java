@@ -157,6 +157,8 @@ public class NGPController {
                     return waypointComboBox.getValue();
                 }
             });
+
+            namesDisplay = true;
         }
     }
 
@@ -181,7 +183,6 @@ public class NGPController {
 
     @FXML
     private void onAddAvoidedRoomButtonPress() {
-        //todo: cant add duplicates (low priority)
         if (avoidRoomComboBox.getValue() != null) {
             if (!avoidedRooms.contains(avoidRoomComboBox.getValue())) {
                 avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);

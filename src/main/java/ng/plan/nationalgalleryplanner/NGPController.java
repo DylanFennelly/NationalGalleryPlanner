@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static ng.plan.nationalgalleryplanner.NGPRun.ROOMS;
-import static ng.plan.nationalgalleryplanner.NGPRun.load;
 
 public class NGPController {
     private JFrame frame; //used for popup windows
@@ -147,7 +146,7 @@ public class NGPController {
                     return curRoomComboBox.getValue();
                 }
             });
-            waypointComboBox.setConverter(new StringConverter<GraphNodeAdjList<Room>>() {
+            waypointComboBox.setConverter(new StringConverter<>() {
                 @Override
                 public String toString(GraphNodeAdjList<Room> roomGraphNodeAdjList) {
                     return roomGraphNodeAdjList.data.name;
@@ -185,8 +184,12 @@ public class NGPController {
     private void onAddAvoidedRoomButtonPress(){
         //todo: cant add duplicates (low priority)
         if (avoidRoomComboBox.getValue() != null) {
-            avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);
-            avoidedRooms.add(avoidRoomComboBox.getValue());
+            if (!avoidedRooms.contains(avoidRoomComboBox.getValue())) {
+                avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);
+                avoidedRooms.add(avoidRoomComboBox.getValue());
+            }else{
+                JOptionPane.showMessageDialog(frame, "This room has already been selected.", "Add Avoided Room Error!", JOptionPane.ERROR_MESSAGE);
+            }
         }else {
             JOptionPane.showMessageDialog(frame, "Please select a room to avoid.", "Add Avoided Room Error!", JOptionPane.ERROR_MESSAGE);
         }
@@ -201,8 +204,12 @@ public class NGPController {
     @FXML
     private void onAddInterestButtonPress(){
         if(interestComboBox.getValue() != null) {
-            interestListView.getItems().add(interestComboBox.getValue());
-            interestRooms.add(interestComboBox.getValue());
+            if (!interestRooms.contains(interestComboBox.getValue())) {
+                interestListView.getItems().add(interestComboBox.getValue());
+                interestRooms.add(interestComboBox.getValue());
+            }else{
+                JOptionPane.showMessageDialog(frame, "This topic of interest has already been selected.", "Add Point of Interest Error!", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
             JOptionPane.showMessageDialog(frame, "Please select a topic of interest.", "Add Point of Interest Error!", JOptionPane.ERROR_MESSAGE);
         }
@@ -218,8 +225,12 @@ public class NGPController {
     @FXML
     private void onAddWaypointButtonPress(){
         if(waypointComboBox.getValue() != null) {
-            waypointListView.getItems().add(waypointComboBox.getValue().data.name);
-            waypoints.add(waypointComboBox.getValue());
+            if (!waypoints.contains(waypointComboBox.getValue())) {
+                waypointListView.getItems().add(waypointComboBox.getValue().data.name);
+                waypoints.add(waypointComboBox.getValue());
+            }else{
+                JOptionPane.showMessageDialog(frame, "This waypoint has already been selected.", "Add Waypoint Error!", JOptionPane.ERROR_MESSAGE);
+            }
         } else {
             JOptionPane.showMessageDialog(frame, "Please select a waypoint room to add.", "Add Waypoint Error!", JOptionPane.ERROR_MESSAGE);
         }
@@ -260,9 +271,6 @@ public class NGPController {
 
     private void runDFSSingleRoute(){
         List<GraphNodeAdjList<Room>> path = NGPAlgorithms.findPathDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data, avoidedRooms);
-
-        //todo: objects (display room names in treeview) so room details can be displayed on click
-        //todo: arrayList with room objects (indices corresponding to room in list) [Array of Arrays]
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);
 

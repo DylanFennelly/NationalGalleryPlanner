@@ -76,7 +76,7 @@
                   <Button layoutX="88.0" layoutY="205.0" mnemonicParsing="false" onAction="#onClearAvoidedRoomsButtonPress" text="Clear All" />
                   <ListView fx:id="avoidRoomsListView" layoutX="182.0" layoutY="167.0" prefHeight="106.0" prefWidth="240.0" />
                   <Label layoutX="14.0" layoutY="286.0" text="Waypoints" />
-                  <ComboBox fx:id="waypointComboBox" layoutX="13.0" layoutY="315.0" prefWidth="150.0" />
+                  <ComboBox fx:id="waypointComboBox" layoutX="13.0" layoutY="315.0" prefWidth="150.0" onMouseEntered="#onComboBoxMouseEnter" />
                   <ListView fx:id="waypointListView" layoutX="181.0" layoutY="315.0" prefHeight="106.0" prefWidth="240.0" />
                   <Button fx:id="waypointAddButton" layoutX="16.0" layoutY="355.0" mnemonicParsing="false" onAction="#onAddWaypointButtonPress" text="Add" />
                   <Button fx:id="waypointClearButton" layoutX="88.0" layoutY="355.0" mnemonicParsing="false" onAction="#onClearWaypointButtonPress" text="Clear All" />

@@ -5,7 +5,7 @@ public class GraphLinkAdjList {
 
     public int cost;                        //link value for Dijkstra's
 
-    public GraphLinkAdjList(GraphNodeAdjList<?> destNode, int cost){
+    public GraphLinkAdjList(GraphNodeAdjList<?> destNode, int cost) {
         this.destNode = destNode;
         this.cost = cost;
     }

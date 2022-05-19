@@ -3,6 +3,7 @@ module ng.plan.nationalgalleryplanner {
     requires javafx.fxml;
     requires javafx.graphics;
     requires xstream;
+    requires java.desktop;
 
 
     opens ng.plan.nationalgalleryplanner to javafx.fxml, xstream;

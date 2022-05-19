@@ -134,8 +134,12 @@ public class NGPAlgorithms {
         firstAgendaPath.add(startNode);
         agenda.add(firstAgendaPath);
         resultPath=findPathBreadthFirst(agenda,null,lookingfor, avoid); //Get single BFS path (will be shortest)
-        Collections.reverse(resultPath); //Reverse path (currently has the goal node as the first item)
-        return resultPath;
+        if (resultPath!= null) {
+            Collections.reverse(resultPath); //Reverse path (currently has the goal node as the first item)
+            return resultPath;
+        }else{
+            return null;
+        }
     }
 
     public static <T> List<GraphNodeAdjList<Room>> findPathBreadthFirst(List<List<GraphNodeAdjList<Room>>> agenda, List<GraphNodeAdjList<Room>> encountered, T lookingfor, List<GraphNodeAdjList<Room>> avoid){

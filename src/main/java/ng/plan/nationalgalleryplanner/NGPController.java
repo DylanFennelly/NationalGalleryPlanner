@@ -5,17 +5,22 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.StringConverter;
+import ng.plan.nationalgalleryplanner.ADTs.GraphLinkAdjList;
 import ng.plan.nationalgalleryplanner.ADTs.GraphNodeAdjList;
 import ng.plan.nationalgalleryplanner.ADTs.Room;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static ng.plan.nationalgalleryplanner.NGPRun.ROOMS;
+import static ng.plan.nationalgalleryplanner.NGPRun.load;
 
 public class NGPController {
+    private JFrame frame; //used for popup windows
     private boolean namesDisplay = false;   //boolean to ensure method to update comboBox names only runs once
     private ArrayList<GraphNodeAdjList<Room>> avoidedRooms;
+    private ArrayList<String> interestRooms;
     @FXML
     private ToggleGroup algoToggleGroup;
 
@@ -26,17 +31,27 @@ public class NGPController {
     private ComboBox<GraphNodeAdjList<Room>> curRoomComboBox, destRoomComboBox, avoidRoomComboBox;
 
     @FXML
+    private ChoiceBox<String> interestComboBox;
+
+    @FXML
     private TreeView<String> routesTreeView;
 
     @FXML
     private Spinner<Integer> routeLimitSpinner;
 
     @FXML
-    private ListView<String> avoidRoomsListView;
+    private ListView<String> avoidRoomsListView, interestListView;
+
+    @FXML
+    private Label roomSelectionLabel, roomTitleLabel, roomNoLabel;
+
+    @FXML
+    private TextArea roomDescTextArea;
 
     @FXML
     private void initialize(){
         avoidedRooms = new ArrayList<>();
+        interestRooms = new ArrayList<>();
 
         ObservableList<GraphNodeAdjList<Room>> roomsList = FXCollections.observableArrayList();
         roomsList.addAll(ROOMS.room1,ROOMS.room2,ROOMS.room4,ROOMS.room5,ROOMS.room6,ROOMS.room7,ROOMS.room8,ROOMS.room9,ROOMS.room10,ROOMS.room11,ROOMS.room12,ROOMS.room14,ROOMS.room15, ROOMS.room15s,
@@ -54,19 +69,25 @@ public class NGPController {
 
     @FXML
     protected void onFindRoutesButtonClick() {
-        if (algoToggleGroup.getSelectedToggle().equals(dfsSingleRadio)){
-            runDFSSingleRoute();
+        if (curRoomComboBox.getValue() != null && destRoomComboBox.getValue() != null) {
+            if (!interestRooms.isEmpty()) {
+                checkInterestList();    //checking if any points of interest have been selected and updating values accordingly
+            }
+            if (algoToggleGroup.getSelectedToggle().equals(dfsSingleRadio)) {
+                runDFSSingleRoute();
 
-        }else if(algoToggleGroup.getSelectedToggle().equals(dfsMultiRadio)){
-            runDFSMultiRoute();
-        }else if(algoToggleGroup.getSelectedToggle().equals(dijkRadio)){
-            runDijkstras();
-        }else{  //if none of the above, then it is BFS
-            runBFS();
+            } else if (algoToggleGroup.getSelectedToggle().equals(dfsMultiRadio)) {
+                runDFSMultiRoute();
+            } else if (algoToggleGroup.getSelectedToggle().equals(dijkRadio)) {
+                runDijkstras();
+            } else {  //if none of the above, then it is BFS
+                runBFS();
+            }
+        }else{
+            JOptionPane.showMessageDialog(frame, "Please select start and destination room.", "Find Route Error!", JOptionPane.ERROR_MESSAGE);
         }
 
     }
-
 
     @FXML
     private void onComboBoxMouseEnter(){        //really jank solution to an issue with the converter in initialize erroring out the whole project
@@ -120,18 +141,27 @@ public class NGPController {
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);
         //todo: set null condition
-        for (GraphNodeAdjList<Room> n : path) {
-            TreeItem<String> roomName = new TreeItem<>(n.data.name);
-            routeNo.getChildren().add(roomName);
+
+        if (path != null) {
+            for (GraphNodeAdjList<Room> n : path) {
+                TreeItem<String> roomName = new TreeItem<>(n.data.name);
+                routeNo.getChildren().add(roomName);
+            }
+            routesTreeView.setRoot(routeNo);
+        }else {
+            JOptionPane.showMessageDialog(frame, "No valid routes between source and destination could be found.\nPlease refine your search parameters and try again.", "Find Route Error!", JOptionPane.ERROR_MESSAGE);
         }
-        routesTreeView.setRoot(routeNo);
     }
 
     @FXML
     private void onAddAvoidedRoomButtonPress(){
         //todo: cant add duplicates (low priority)
-        avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);
-        avoidedRooms.add(avoidRoomComboBox.getValue());
+        if (avoidRoomComboBox.getValue() != null) {
+            avoidRoomsListView.getItems().add(avoidRoomComboBox.getValue().data.name);
+            avoidedRooms.add(avoidRoomComboBox.getValue());
+        }else {
+            JOptionPane.showMessageDialog(frame, "Please select a room to avoid.", "Add Avoided Room Error!", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @FXML
@@ -140,33 +170,83 @@ public class NGPController {
         avoidedRooms.clear();
     }
 
+    @FXML
+    private void onAddInterestButtonPress(){
+        if(interestComboBox.getValue() != null) {
+            interestListView.getItems().add(interestComboBox.getValue());
+            interestRooms.add(interestComboBox.getValue());
+        } else {
+            JOptionPane.showMessageDialog(frame, "Please select a topic of interest.", "Add Avoided Room Error!", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @FXML
+    private void onClearInterestButtonPress() throws Exception {
+        interestListView.getItems().clear();
+        interestRooms.clear();
+        resetRoomCosts();
+    }
+
+    @FXML
+    private void onStartNodeSelected(){
+        updateRoomInfo(curRoomComboBox.getValue().data);
+    }
+
+    @FXML
+    private void onDestNodeSelected(){
+        updateRoomInfo(destRoomComboBox.getValue().data);
+    }
+
+    @FXML
+    private void onAvoidNodeSelected(){
+        updateRoomInfo(avoidRoomComboBox.getValue().data);
+    }
+
+
+    private void updateRoomInfo(Room room){
+        roomSelectionLabel.setVisible(false);
+        roomTitleLabel.setVisible(true);
+        roomNoLabel.setVisible(true);
+        roomDescTextArea.setVisible(true);
+
+        roomTitleLabel.setText(room.title);
+        roomNoLabel.setText(room.name);
+        roomDescTextArea.setText(room.description);
+    }
+
+
     private void runDFSMultiRoute(){
         List<List<GraphNodeAdjList<Room>>> allPath = NGPAlgorithms.findAllPathsDepthFirst(curRoomComboBox.getValue(), null,destRoomComboBox.getValue().data, avoidedRooms);
         int pCount=1;
 
         ArrayList<TreeItem<String>> treeRoutes = new ArrayList<>();
 
-        for (List<GraphNodeAdjList<Room>> p : allPath) {
-            if (pCount <= routeLimitSpinner.getValue()) {
-                TreeItem<String> routeNo = new TreeItem<>("Route " +pCount);
+        if (allPath != null) {
+            for (List<GraphNodeAdjList<Room>> p : allPath) {
+                if (pCount <= routeLimitSpinner.getValue()) {
+                    TreeItem<String> routeNo = new TreeItem<>("Route " + pCount);
 
-                for (GraphNodeAdjList<Room> n : p){
-                    TreeItem<String> roomName = new TreeItem<>(n.data.name);
-                    routeNo.getChildren().add(roomName);
+                    for (GraphNodeAdjList<Room> n : p) {
+                        TreeItem<String> roomName = new TreeItem<>(n.data.name);
+                        routeNo.getChildren().add(roomName);
+                    }
+
+                    treeRoutes.add(pCount - 1, routeNo);
+                    pCount++;
+                } else {
+                    TreeItem dummy = new TreeItem();
+                    routesTreeView.setRoot(dummy);   //tree can only have one root, so create dummy root at top
+                    routesTreeView.setShowRoot(false);
+
+                    for (TreeItem<String> route : treeRoutes) {
+                        dummy.getChildren().add(route);
+                    }
+                    break;
                 }
 
-                treeRoutes.add(pCount-1,routeNo);
-                pCount++;
-            }else{
-                TreeItem dummy = new TreeItem();
-                routesTreeView.setRoot(dummy);   //tree can only have one root, so create dummy root at top
-                routesTreeView.setShowRoot(false);
-
-                for (TreeItem<String> route : treeRoutes){
-                    dummy.getChildren().add(route);
-                }
-                break;
             }
+        }else {
+            JOptionPane.showMessageDialog(frame, "No valid routes between source and destination could be found.\nPlease refine your search parameters and try again.", "Find Route Error!", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -177,11 +257,17 @@ public class NGPController {
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);
 
-        for(GraphNodeAdjList<Room> n : cpa.pathList) {
-            TreeItem<String> roomName = new TreeItem<>(n.data.name);
-            routeNo.getChildren().add(roomName);
+        if (cpa != null) {
+            for (GraphNodeAdjList<Room> n : cpa.pathList) {
+                TreeItem<String> roomName = new TreeItem<>(n.data.name);
+                routeNo.getChildren().add(roomName);
+            }
+            routesTreeView.setRoot(routeNo);
+
+//        System.out.println("Total Cost: " + cpa.pathCost);
+        }else {
+            JOptionPane.showMessageDialog(frame, "No valid routes between source and destination could be found.\nPlease refine your search parameters and try again.", "Find Route Error!", JOptionPane.ERROR_MESSAGE);
         }
-        routesTreeView.setRoot(routeNo);
     }
 
     private void runBFS() {
@@ -190,10 +276,415 @@ public class NGPController {
         TreeItem<String> routeNo = new TreeItem<>("Route");
         routeNo.setExpanded(true);
 
-        for(GraphNodeAdjList<Room> n : bfsPath) {
-            TreeItem<String> roomName = new TreeItem<>(n.data.name);
-            routeNo.getChildren().add(roomName);
+        if (bfsPath != null) {
+            for (GraphNodeAdjList<Room> n : bfsPath) {
+                TreeItem<String> roomName = new TreeItem<>(n.data.name);
+                routeNo.getChildren().add(roomName);
+            }
+            routesTreeView.setRoot(routeNo);
+        }else {
+            JOptionPane.showMessageDialog(frame, "No valid routes between source and destination could be found.\nPlease refine your search parameters and try again.", "Find Route Error!", JOptionPane.ERROR_MESSAGE);
         }
-        routesTreeView.setRoot(routeNo);
     }
+
+    private void checkInterestList() {
+        for (String pointOfInterest : interestRooms){
+            switch (pointOfInterest){
+                case "Dates 1200-1500" -> update12001500Rooms();
+                case "Dates 1500-1600" -> update15001600Rooms();
+                case "Dates 1600-1700" -> update16001700Rooms();
+                case "Dates 1700-1930" -> update17001930Rooms();
+                case "Raphael" -> updateRaphaelRooms();
+            }
+        }
+    }
+
+    private void update12001500Rooms() {
+        for (GraphLinkAdjList link : ROOMS.room51.adjList){
+            link.setCost(1);        //set links connecting to points of interest to 1
+        }
+        for (GraphLinkAdjList link : ROOMS.room52.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room53.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room54.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room55.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room56.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room57.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room58.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room59.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room60.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room61.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room62.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room63.adjList){
+            link.setCost(1);
+        }for (GraphLinkAdjList link : ROOMS.room64.adjList){
+            link.setCost(1);        
+        }
+        for (GraphLinkAdjList link : ROOMS.room65.adjList){
+            link.setCost(1);        
+        }
+    }
+
+    private void update15001600Rooms() {
+        for (GraphLinkAdjList link : ROOMS.room1.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room2.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room4.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room5.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room6.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room7.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room8.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room9.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room10.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room11.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room12.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room14.adjList){
+            link.setCost(1);
+        }
+
+    }
+
+    private void update16001700Rooms() {
+        for (GraphLinkAdjList link : ROOMS.room15.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room16.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room17.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room18.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room19.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room20.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room21.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room22.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room23.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room24.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room25.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room26.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room27.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room28.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room29.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room30.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room30.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room32.adjList){
+            link.setCost(1);
+        }
+    }
+
+    private void update17001930Rooms() {
+        for (GraphLinkAdjList link : ROOMS.room33.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room34.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room35.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room36.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room37.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room38.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room39.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room40.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room41.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room42.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room43.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room44.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room45.adjList){
+            link.setCost(1);
+        }
+    }
+
+    private void updateRaphaelRooms(){
+        for (GraphLinkAdjList link : ROOMS.room1.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room2.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room4.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room5.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room6.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room7.adjList){
+            link.setCost(1);
+        }
+        for (GraphLinkAdjList link : ROOMS.room8.adjList){
+            link.setCost(1);
+        }
+    }
+
+    private void resetRoomCosts() { //resetting links back to 10
+        for (GraphLinkAdjList link : ROOMS.room1.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room2.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room4.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room5.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room6.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room7.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room8.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room9.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room10.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room11.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room12.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room14.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room15.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room16.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room17.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room18.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room19.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room20.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room21.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room22.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room23.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room24.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room25.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room26.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room27.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room28.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room29.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room30.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room30.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room32.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room33.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room34.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room35.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room36.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room37.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room38.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room39.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room40.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room41.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room42.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room43.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room44.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room45.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room51.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room52.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room53.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room54.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room55.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room56.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room57.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room58.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room59.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room60.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room61.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room62.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room63.adjList){
+            link.setCost(10);
+        }for (GraphLinkAdjList link : ROOMS.room64.adjList){
+            link.setCost(10);
+        }
+        for (GraphLinkAdjList link : ROOMS.room65.adjList){
+            link.setCost(10);
+        }
+    }
+
+
+
 }
